@@ -12,7 +12,13 @@ describe "Authentication" do
 	end
 
 	describe "signin" do
+		let(:user) { FactoryGirl.create(:user) }
 		before { visit signin_path }
+
+		describe "before user signin" do
+			it { should_not have_link('Profile', href: user_path(user)) }
+			it { should_not have_link('Settings', href: edit_user_path(user)) }
+		end
 
 		describe "with invalid information" do
 			before { click_button "Sign in" }
@@ -27,7 +33,6 @@ describe "Authentication" do
 		end
 
 		describe "with valid information" do
-			let(:user) { FactoryGirl.create(:user) }
 			before { valid_signin(user) }
 
 			it { should have_title(user.name) }
@@ -51,14 +56,23 @@ describe "Authentication" do
 			describe "when attemptimg to visit a protected page" do
 				before do
 					visit edit_user_path(user)
-					fill_in "Email", with: user.email
-					fill_in "Password", with: user.password
-					click_button "Sign in"
+					valid_signin(user)
 				end
 
 				describe "after signing in" do
 					it "should render the desired protected page" do
 						page.should have_title('Edit user')
+					end
+				end
+
+				describe "when signing in again" do
+					before do
+						visit signin_path
+						valid_signin(user)
+					end
+
+					it "should render the default (profile) page" do
+						page.should have_title(user.name)
 					end
 				end
 			end

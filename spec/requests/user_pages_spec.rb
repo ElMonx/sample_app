@@ -133,4 +133,25 @@ describe "User pages" do
 		end
 	end
 
+	describe "destroy" do
+		before(:all) { 10.times { FactoryGirl.create(:admin) } }
+		after(:all) { User.delete_all }
+
+		let(:admin) { FactoryGirl.create(:admin) }
+
+		before do
+			visit signin_path
+			valid_signin(admin)
+			visit users_path
+		end
+
+		describe "an admin should not be able to delete another admin" do
+			before do
+				click_link 'delete'
+			end
+
+			it { should have_error_message("You can't delete other admin users.") }
+		end
+	end
+
 end
